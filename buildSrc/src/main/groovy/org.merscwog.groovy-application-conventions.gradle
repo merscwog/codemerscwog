@@ -1,0 +1,4 @@
+plugins {
+    id 'org.merscwog.groovy-common-conventions'
+    id 'application'
+}

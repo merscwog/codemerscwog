@@ -1,0 +1,11 @@
+plugins {
+    id 'org.merscwog.groovy-application-conventions'
+}
+
+dependencies {
+    implementation project(':sandbox')
+}
+
+application {
+    mainClass = 'org.merscwog.app.App'
+}

@@ -1,0 +1,58 @@
+plugins {
+    id 'groovy'
+    id 'codenarc'
+}
+
+repositories {
+    mavenCentral()
+}
+
+String groovyVersion = '4.0.0'
+String codeNarcGroovyVersion = '3.0.9'
+
+dependencies {
+    constraints {
+        implementation "org.apache.groovy:groovy:${groovyVersion}"
+    }
+
+    modules {
+        module('org.codehaus.groovy:groovy') {
+            replacedBy('org.apache.groovy:groovy', 'new org since groovy 4.x')
+        }
+    }
+
+    implementation 'org.apache.groovy:groovy'
+}
+
+testing {
+    suites {
+        test {
+            useSpock('2.1-M2-groovy-3.0')
+        }
+    }
+}
+
+// Spock hack to make it able to run against Groovy 4
+tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
+    options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
+    if (! groovyCompile.name.contains('Test')) {
+        groovyOptions.configurationScript = rootProject.file('buildSrc/src/main/groovy/DefaultCompileAST.groovy')
+    }
+}
+
+// CodeNarc hack to at least bump it up to 3.x; 4.x fails hard on AbstractAstVisitor.visitClassEx()
+// It works, but even attempting to tweak compilationPath still is very unhappy because groovy is too new in code
+// Lots and lots of error messages, hopefully codenarc 3.something will fix this
+configurations.codenarc {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.codehaus.groovy') {
+            //details.useTarget("org.apache.groovy:${details.requested.name}:${groovyVersion}")
+            details.useVersion(codeNarcGroovyVersion)
+        }
+    }
+}
+
+codenarc {
+    config = rootProject.resources.text.fromFile('buildSrc/src/main/groovy/CodeNarcRules.groovy')
+    toolVersion = '2.2.0'
+}
