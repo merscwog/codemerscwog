@@ -30,6 +30,7 @@ class SandboxingTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
         SandboxingBindingConstraints activeConstraints = SandboxingBindingConstraints.ACTIVE_VALUES.get()
         Map<String, ClassNode> variableTypes = activeConstraints.variableTypes
         Set<Pattern> allowedMethods = activeConstraints.allowedMethods
+        Set<Pattern> allowedProperties = activeConstraints.allowedProperties
 
         Closure onMethodSelectionClosure = { Expression expr, MethodNode methodNode ->
             if (expr.columnNumber > 0 && expr.lineNumber > 0) {
@@ -59,7 +60,7 @@ class SandboxingTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
         TypeCheckingContext typeCheckingContext = (TypeCheckingContext)getProperty('context')
 
         Closure afterVisitMethodClosure = { MethodNode methodNode ->
-            PropertyExpressionChecker visitor = new PropertyExpressionChecker(typeCheckingContext.source, methodNode.declaringClass, allowedMethods)
+            PropertyExpressionChecker visitor = new PropertyExpressionChecker(typeCheckingContext.source, methodNode.declaringClass, allowedProperties)
             visitor.visitMethod(methodNode)
         }
 
@@ -87,12 +88,12 @@ class SandboxingTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
     private static class PropertyExpressionChecker extends ClassCodeVisitorSupport {
 
         private final SourceUnit sourceUnit
-        private final Set<Pattern> allowedMethods
+        private final Set<Pattern> allowedProperties
         private final Hack hack
 
-        PropertyExpressionChecker(final SourceUnit sourceUnit, final ClassNode classNode, final Set<Pattern> allowedMethods) {
+        PropertyExpressionChecker(final SourceUnit sourceUnit, final ClassNode classNode, final Set<Pattern> allowedProperties) {
             this.sourceUnit = sourceUnit
-            this.allowedMethods = allowedMethods
+            this.allowedProperties = allowedProperties
             this.hack = new Hack(sourceUnit, classNode)
         }
 
@@ -109,7 +110,7 @@ class SandboxingTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
 
                 // FIXME: properties need different regex pattern, although maybe always caught by method checks anyway
                 //        Not sure why I'd ever want the method to be allowed but _NOT_ the property
-                if (! allowedMethods.any { Pattern pattern -> pattern.matcher(descr).matches() }) {
+                if (! allowedProperties.any { Pattern pattern -> pattern.matcher(descr).matches() }) {
                     hack.passThruAddStaticTypeError("Property is not allowed: ${descr}", expression)
                 }
             }

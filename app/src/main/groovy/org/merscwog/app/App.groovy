@@ -4,12 +4,9 @@
 package org.merscwog.app
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
-
-import java.util.regex.Pattern
+import org.merscwog.sandbox.StaticTypedBinding
 
 import org.merscwog.sandbox.SandboxingBindingConstraints
 
@@ -21,31 +18,50 @@ class App {
     private static final String SCRIPT_TEXT = '''
         println 'bob'
         println hi
-        ['bob'].indices
+        //['bob'].indices
         //System.exit(-1)
+        2
     '''
 
-    @SuppressWarnings('Println')
+    @SuppressWarnings(['Println', 'CatchThrowable'])
     static void main(String[] args) {
-        Binding binding = new Binding()
-        binding.setVariable('hi', 'Hello World')
-        // FIXME: Probably should have a method to add to binding and also update variableTypes
-
         CompilerConfiguration compilerConfig = new CompilerConfiguration()
         ASTTransformationCustomizer customizer = new ASTTransformationCustomizer(
                 ['extensions': 'org.merscwog.sandbox.SandboxingTypeCheckingExtension'],
                 CompileStatic)
         compilerConfig.addCompilationCustomizers(customizer)
 
-        Map<String, ClassNode> variableTypes = ['hi': ClassHelper.STRING_TYPE]
-        Set<Pattern> allowedMethods = [~/groovy\.lang\.Script#println(.*)/]
-        SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(variableTypes, allowedMethods))
-        GroovyShell shell = new GroovyShell(binding, compilerConfig)
+        StaticTypedBinding staticTypedBinding = new StaticTypedBinding()
+        staticTypedBinding.setVariableWithType('hi', 'Hello World', String)
+//        Map<String, ClassNode> variableTypes = staticTypedBinding.variablesToTypes
+//        Set<Pattern> allowedMethods = [~/groovy\.lang\.Script#println(.*)/]
+//        Set<Pattern> allowedProperties = [~/java\.util\.Collection#indices/]
+
+        Challenge challenge = new Challenge().tap {
+            variableTypes = staticTypedBinding.variablesToTypes
+            allowedMethods = [~/groovy\.lang\.Script#println(.*)/]
+            allowedProperties = [~/java\.util\.Collection#indices/]
+        }
+
+        //SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(variableTypes, allowedMethods, allowedProperties))
+        SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(challenge.variableTypes,
+                challenge.allowedMethods,
+                challenge.allowedProperties))
+        GroovyShell shell = new GroovyShell(staticTypedBinding, compilerConfig)
 
         Script script = shell.parse(SCRIPT_TEXT)
         Object scriptResult = script.run()
         if (scriptResult) {
-            println scriptResult.class
+            try {
+                Object expectedResult = challenge.expectedResult
+                assert scriptResult == expectedResult
+                println 'You PASSED!'
+            } catch (Throwable t) {
+                println t.message
+                println 'You FAILED!'
+            }
+        } else {
+            println 'Need something to return, so FAILED!'
         }
     }
 }

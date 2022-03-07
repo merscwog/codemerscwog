@@ -59,6 +59,12 @@ class StaticTypedBinding extends Binding {
         setTypeForVariable(variableName, clazz)
     }
 
+    void setVariablesWithInferredTypes(Map<String, Object> variablesToInferredTypes) {
+        variablesToInferredTypes.each { Map.Entry<String,Object> entry ->
+            setVariableWithInferredType(entry.key, entry.value)
+        }
+    }
+
     void setVariableWithInferredType(String variableName, boolean value) {
         setVariableWithType(variableName, value, ClassHelper.boolean_TYPE)
     }

@@ -6,7 +6,7 @@ import org.codehaus.groovy.ast.ClassNode
 import java.util.regex.Pattern
 
 /**
- * Constains the explicit compilation and binding constraints allowed for Scripts.
+ * Constrains the explicit compilation and binding constraints allowed for Scripts.
  */
 @Immutable
 class SandboxingBindingConstraints {
@@ -15,4 +15,5 @@ class SandboxingBindingConstraints {
 
     Map<String, ClassNode> variableTypes = [:]
     Set<Pattern> allowedMethods = []
+    Set<Pattern> allowedProperties = []
 }
