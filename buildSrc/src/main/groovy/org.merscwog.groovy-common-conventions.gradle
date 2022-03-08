@@ -7,7 +7,7 @@ repositories {
     mavenCentral()
 }
 
-String groovyVersion = '4.0.0'
+String groovyVersion = '4.0.1'
 String codeNarcGroovyVersion = '3.0.9'
 
 dependencies {
