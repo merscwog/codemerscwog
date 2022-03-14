@@ -1,10 +1,22 @@
 plugins {
     id 'groovy'
     id 'codenarc'
+    id 'maven-publish'
 }
 
 repositories {
     mavenCentral()
+}
+
+group = 'org.merscwog'
+version = '1.0'
+
+publishing {
+    publications {
+        myLibrary(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 String groovyVersion = '4.0.1'
@@ -33,9 +45,12 @@ testing {
 }
 
 // Spock hack to make it able to run against Groovy 4
+// Force @CompileStatic default and possibly other defaults by DefaultCompileAST
+// Set Java 8 target version to make it easier to use existing Java installations on destination computers
 tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
     options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
     if (! groovyCompile.name.contains('Test')) {
+        groovyCompile.targetCompatibility = '1.8'
         groovyOptions.configurationScript = rootProject.file('buildSrc/src/main/groovy/DefaultCompileAST.groovy')
     }
 }

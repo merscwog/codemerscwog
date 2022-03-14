@@ -1,15 +1,14 @@
 package org.merscwog.app
 
-import org.codehaus.groovy.ast.ClassNode
+import org.merscwog.sandbox.StaticTypedBinding
 
 import java.util.regex.Pattern
 
 class Challenge {
-    Map<String, ClassNode> variableTypes = [:]
+    StaticTypedBinding staticTypedBinding = new StaticTypedBinding()
     Set<Pattern> allowedMethods = []
     Set<Pattern> allowedProperties = []
 
-    String description = '''Please return the value 'one' as a long value'''
-    List<String> defaultCodeBlocks = ['// Nothing to see here!!!!']
+    String description = ''''''
     Object expectedResult = 1L
 }

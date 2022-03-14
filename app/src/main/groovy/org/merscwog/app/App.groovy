@@ -15,6 +15,7 @@ import org.merscwog.sandbox.SandboxingBindingConstraints
  * within some other helper class.
  */
 class App {
+
     private static final String SCRIPT_TEXT = '''
         println 'bob'
         println hi
@@ -25,32 +26,20 @@ class App {
 
     @SuppressWarnings(['Println', 'CatchThrowable'])
     static void main(String[] args) {
-        CompilerConfiguration compilerConfig = new CompilerConfiguration()
-        ASTTransformationCustomizer customizer = new ASTTransformationCustomizer(
-                ['extensions': 'org.merscwog.sandbox.SandboxingTypeCheckingExtension'],
-                CompileStatic)
-        compilerConfig.addCompilationCustomizers(customizer)
-
-        StaticTypedBinding staticTypedBinding = new StaticTypedBinding()
-        staticTypedBinding.setVariableWithType('hi', 'Hello World', String)
+        //StaticTypedBinding staticTypedBinding = new StaticTypedBinding()
+        //staticTypedBinding.setVariableWithType('hi', 'Hello World', String)
 //        Map<String, ClassNode> variableTypes = staticTypedBinding.variablesToTypes
 //        Set<Pattern> allowedMethods = [~/groovy\.lang\.Script#println(.*)/]
 //        Set<Pattern> allowedProperties = [~/java\.util\.Collection#indices/]
 
         Challenge challenge = new Challenge().tap {
-            variableTypes = staticTypedBinding.variablesToTypes
+            staticTypedBinding.setVariableWithType('hi', 'Hello World', String)
             allowedMethods = [~/groovy\.lang\.Script#println(.*)/]
             allowedProperties = [~/java\.util\.Collection#indices/]
         }
 
-        //SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(variableTypes, allowedMethods, allowedProperties))
-        SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(challenge.variableTypes,
-                challenge.allowedMethods,
-                challenge.allowedProperties))
-        GroovyShell shell = new GroovyShell(staticTypedBinding, compilerConfig)
-
-        Script script = shell.parse(SCRIPT_TEXT)
-        Object scriptResult = script.run()
+        PreparedChallenge preparedChallenge = PreparedChallenge.prepare(challenge)
+        Object scriptResult = preparedChallenge.compileAndRun(SCRIPT_TEXT)
         if (scriptResult) {
             try {
                 Object expectedResult = challenge.expectedResult
