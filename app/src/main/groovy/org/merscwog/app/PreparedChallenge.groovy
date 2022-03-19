@@ -7,33 +7,34 @@ import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.merscwog.sandbox.SandboxingBindingConstraints
 
 class PreparedChallenge {
-     static CompilerConfiguration compilerConfig = generateCompileConfiguration()
+    static CompilerConfiguration compilerConfig = generateCompileConfiguration()
 
-     Challenge underlyingChallenge
-     GroovyShell preparedShell
+    Challenge underlyingChallenge
+    GroovyShell preparedShell
 
-     Object compileAndRun(String scriptText) throws CompilationFailedException {
-          SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(
-                  underlyingChallenge.staticTypedBinding.variablesToTypes,
-                  underlyingChallenge.allowedMethods,
-                  underlyingChallenge.allowedProperties))
+    static PreparedChallenge prepare(Challenge challenge) {
+        new PreparedChallenge().tap {
+            underlyingChallenge = challenge
+            preparedShell = new GroovyShell(challenge.staticTypedBinding, compilerConfig)
+        }
+    }
 
-          Script script = preparedShell.parse(scriptText)
-          script.run()
-     }
+    static CompilerConfiguration generateCompileConfiguration() {
+        CompilerConfiguration compilerConfig = new CompilerConfiguration()
+        ASTTransformationCustomizer customizer = new ASTTransformationCustomizer(
+                ['extensions': 'org.merscwog.sandbox.SandboxingTypeCheckingExtension'],
+                CompileStatic)
+        compilerConfig.addCompilationCustomizers(customizer)
+    }
 
-     static PreparedChallenge prepare(Challenge challenge) {
-          new PreparedChallenge().tap {
-               underlyingChallenge = challenge
-               preparedShell = new GroovyShell(challenge.staticTypedBinding, compilerConfig)
-          }
-     }
+    Object compileAndRun(String scriptText) throws CompilationFailedException {
+        SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(
+                underlyingChallenge.staticTypedBinding.variablesToTypes,
+                underlyingChallenge.allowedMethods,
+                underlyingChallenge.allowedProperties))
 
-     static CompilerConfiguration generateCompileConfiguration() {
-          CompilerConfiguration compilerConfig = new CompilerConfiguration()
-          ASTTransformationCustomizer customizer = new ASTTransformationCustomizer(
-                  ['extensions': 'org.merscwog.sandbox.SandboxingTypeCheckingExtension'],
-                  CompileStatic)
-          compilerConfig.addCompilationCustomizers(customizer)
-     }
+        Script script = preparedShell.parse(scriptText)
+        script.run()
+    }
+
 }

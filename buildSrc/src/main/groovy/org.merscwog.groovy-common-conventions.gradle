@@ -55,9 +55,7 @@ tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
     }
 }
 
-// CodeNarc hack to at least bump it up to 3.x; 4.x fails hard on AbstractAstVisitor.visitClassEx()
-// It works, but even attempting to tweak compilationPath still is very unhappy because groovy is too new in code
-// Lots and lots of error messages, hopefully codenarc 3.something will fix this
+// CodeNarc 3.0.0 as expected works with groovy 3.x, but still fails on groovy 4
 configurations.codenarc {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group == 'org.codehaus.groovy') {
@@ -69,5 +67,18 @@ configurations.codenarc {
 
 codenarc {
     config = rootProject.resources.text.fromFile('buildSrc/src/main/groovy/CodeNarcRules.groovy')
-    toolVersion = '2.2.0'
+    toolVersion = '3.0.0'
+}
+
+tasks.withType(CodeNarc) { CodeNarc codeNarc ->
+    SourceSetContainer sourceSetContainer = codeNarc.project.extensions.getByType(JavaPluginExtension).sourceSets
+    SourceSet main = sourceSetContainer.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+    SourceSet test = sourceSetContainer.getByName(SourceSet.TEST_SOURCE_SET_NAME)
+
+    FileCollection totalCompilationClasspath = main.compileClasspath + main.output
+    if (codeNarc.name.contains('Test')) {
+        totalCompilationClasspath = test.compileClasspath + test.output
+    }
+
+    codeNarc.compilationClasspath = totalCompilationClasspath
 }
