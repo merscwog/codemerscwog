@@ -166,10 +166,10 @@ ruleset {
     DuplicateStringLiteral
 
     // rulesets/enhanced.xml
-    CloneWithoutCloneable
-    JUnitAssertEqualsConstantActualValue
-    MissingOverrideAnnotation
-    UnsafeImplementationAsMap
+    //CloneWithoutCloneable
+    //JUnitAssertEqualsConstantActualValue
+    //MissingOverrideAnnotation
+    //UnsafeImplementationAsMap
 
     // rulesets/exceptions.xml
     CatchArrayIndexOutOfBoundsException
@@ -248,18 +248,18 @@ ruleset {
     StatelessClass
 
     // rulesets/grails.xml
-    GrailsDomainGormMethods
-    GrailsDomainHasEquals
-    GrailsDomainHasToString
-    GrailsDomainReservedSqlKeywordName
-    GrailsDomainStringPropertyMaxSize
-    GrailsDomainWithServiceReference
-    GrailsDuplicateConstraint
-    GrailsDuplicateMapping
-    GrailsMassAssignment
-    GrailsPublicControllerMethod
-    GrailsServletContextReference
-    GrailsStatelessService
+    //GrailsDomainGormMethods
+    //GrailsDomainHasEquals
+    //GrailsDomainHasToString
+    //GrailsDomainReservedSqlKeywordName
+    //GrailsDomainStringPropertyMaxSize
+    //GrailsDomainWithServiceReference
+    //GrailsDuplicateConstraint
+    //GrailsDuplicateMapping
+    //GrailsMassAssignment
+    //GrailsPublicControllerMethod
+    //GrailsServletContextReference
+    //GrailsStatelessService
 
     // rulesets/groovyism.xml
     AssignCollectionSort
