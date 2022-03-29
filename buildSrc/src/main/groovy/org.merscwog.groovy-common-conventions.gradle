@@ -48,11 +48,16 @@ testing {
 // Force @CompileStatic default and possibly other defaults by DefaultCompileAST
 // Set Java 8 target version to make it easier to use existing Java installations on destination computers
 tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
-    options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
+    groovyCompile.options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
     if (! groovyCompile.name.contains('Test')) {
         groovyCompile.targetCompatibility = '1.8'
         groovyOptions.configurationScript = rootProject.file('buildSrc/src/main/groovy/DefaultCompileAST.groovy')
     }
+}
+
+// Spock hack needs to be replicated at run phase sometimes
+tasks.withType(Test).configureEach { Test test ->
+    test.systemProperties('spock.iKnowWhatImDoing.disableGroovyVersionCheck': true)
 }
 
 // CodeNarc 3.0.0 as expected works with groovy 3.x, but still fails on groovy 4
