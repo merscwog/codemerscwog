@@ -19,7 +19,7 @@ publishing {
     }
 }
 
-String groovyVersion = '4.0.1'
+String groovyVersion = '4.0.2'
 String codeNarcGroovyVersion = '3.0.9'
 
 dependencies {
