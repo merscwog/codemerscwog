@@ -46,7 +46,7 @@ class SandboxingTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
 
         Closure unresolvedVariableClosure = { VariableExpression varExpr ->
             if (invokeMethod('isDynamic', [varExpr] as Object[])) {
-                ClassNode varClassNode = variableTypes[varExpr.name]
+                ClassNode varClassNode = variableTypes?[varExpr.name]
 
                 if (varClassNode) {
                     invokeMethod('storeType', [varExpr, varClassNode] as Object[])
