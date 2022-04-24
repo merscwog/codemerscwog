@@ -11,6 +11,15 @@ repositories {
 group = 'org.merscwog'
 version = '1.0'
 
+configurations {
+    runtimeElements {
+        // NOTE: Defaults to the Java compiler version, and not what groovy is generating for bytecode
+        attributes { AttributeContainer attributeContainer ->
+            attributeContainer.attribute(org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
+        }
+    }
+}
+
 publishing {
     publications {
         myLibrary(MavenPublication) {
