@@ -5,10 +5,14 @@ import groovy.transform.TimedInterrupt
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
+import org.codehaus.groovy.runtime.powerassert.PowerAssertionError
 import org.merscwog.sandbox.SandboxingBindingConstraints
 
+import java.util.concurrent.TimeoutException
+
 class PreparedChallenge {
-    static CompilerConfiguration compilerConfig = generateCompileConfiguration()
+    private static final String FAKE_SCRIPT_FILE_NAME = 'line'
+    private static CompilerConfiguration compilerConfig = generateCompileConfiguration()
 
     private Challenge underlyingChallenge
     private GroovyShell preparedShell
@@ -33,14 +37,27 @@ class PreparedChallenge {
         compilerConfig.addCompilationCustomizers(customizer, timedInterruptCustomizer)
     }
 
-    Object compileAndRun(String scriptText) throws CompilationFailedException {
+    String getDescription() {
+        underlyingChallenge.description
+    }
+
+    void assertExpectedResult(Object actualResult) throws PowerAssertionError {
+        Object expectedResult = underlyingChallenge.expectedResult
+        assert actualResult == expectedResult
+    }
+
+    Object compileAndRun(String scriptText) throws CompilationFailedException, TimeoutException {
         SandboxingBindingConstraints.ACTIVE_VALUES.set(new SandboxingBindingConstraints(
                 underlyingChallenge.staticTypedBinding.variablesToTypes,
                 underlyingChallenge.allowedMethods,
                 underlyingChallenge.allowedProperties))
 
-        Script script = preparedShell.parse(scriptText)
+        Script script = preparedShell.parse(scriptText, FAKE_SCRIPT_FILE_NAME)
         script.run()
     }
 
+    void compileAndRunAndAssertExpectedResult(String scriptText) throws CompilationFailedException, PowerAssertionError, TimeoutException {
+        Object result = compileAndRun(scriptText)
+        assertExpectedResult(result)
+    }
 }
