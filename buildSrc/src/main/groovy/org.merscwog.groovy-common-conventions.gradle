@@ -9,7 +9,7 @@ repositories {
 }
 
 group = 'org.merscwog'
-version = '1.0'
+version = '1.0.1'
 
 configurations {
     runtimeElements {
@@ -28,8 +28,8 @@ publishing {
     }
 }
 
-String groovyVersion = '4.0.2'
-String codeNarcGroovyVersion = '3.0.9'
+String groovyVersion = '4.0.13'
+String codeNarcGroovyVersion = groovyVersion
 
 dependencies {
     constraints {
@@ -48,7 +48,7 @@ dependencies {
 testing {
     suites {
         test {
-            useSpock('2.1-M2-groovy-3.0')
+            useSpock('2.3-groovy-4.0')
         }
     }
 }
@@ -57,7 +57,7 @@ testing {
 // Force @CompileStatic default and possibly other defaults by DefaultCompileAST
 // Set Java 8 target version to make it easier to use existing Java installations on destination computers
 tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
-    groovyCompile.options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
+    //groovyCompile.options.forkOptions.jvmArgs << '-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true'
     if (! groovyCompile.name.contains('Test')) {
         groovyCompile.targetCompatibility = '1.8'
         groovyOptions.configurationScript = rootProject.file('buildSrc/src/main/groovy/DefaultCompileAST.groovy')
@@ -65,9 +65,9 @@ tasks.withType(GroovyCompile).configureEach { GroovyCompile groovyCompile ->
 }
 
 // Spock hack needs to be replicated at run phase sometimes
-tasks.withType(Test).configureEach { Test test ->
-    test.systemProperties('spock.iKnowWhatImDoing.disableGroovyVersionCheck': true)
-}
+//tasks.withType(Test).configureEach { Test test ->
+//    test.systemProperties('spock.iKnowWhatImDoing.disableGroovyVersionCheck': true)
+//}
 
 // CodeNarc 3.0.0 as expected works with groovy 3.x, but still fails on groovy 4
 configurations.codenarc {
@@ -81,10 +81,10 @@ configurations.codenarc {
 
 codenarc {
     config = rootProject.resources.text.fromFile('buildSrc/src/main/groovy/CodeNarcRules.groovy')
-    toolVersion = '3.0.0'
+    toolVersion = '3.2.0-groovy-4.0'
 }
 
-tasks.withType(CodeNarc) { CodeNarc codeNarc ->
+tasks.withType(CodeNarc).configureEach { CodeNarc codeNarc ->
     SourceSetContainer sourceSetContainer = codeNarc.project.extensions.getByType(JavaPluginExtension).sourceSets
     SourceSet main = sourceSetContainer.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
     SourceSet test = sourceSetContainer.getByName(SourceSet.TEST_SOURCE_SET_NAME)

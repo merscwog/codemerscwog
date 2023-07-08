@@ -7,6 +7,13 @@ package org.merscwog.app
 class App {
 
     private static final String SCRIPT_TEXT = '''
+        // FIXME: need to be able to block this effectively, among other annotations not desired...
+        // This particular annotation runs from semantic_analysis phase and subsequent ones, unless a specific
+        // phase is selected, although it will still run multiple times unless it is checking phases somehow
+        //@groovy.transform.ASTTest(value={
+        //    System.out.println 'should be disallowed'
+        //})
+        def meh
         println 'bob'
         println hi
         //['bob'].indices
